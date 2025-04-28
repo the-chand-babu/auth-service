@@ -1,0 +1,39 @@
+version:  '3.8'
+name : authentication-service
+services:
+  authservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://authApp:authservice@mongodb:27017/authservice_db?authSource=admin
+      - JWT_SECRET=your_jwt_secret
+    volumes:
+      - .:/app
+    command: npm run start:development
+    depends_on:
+      - mongodb
+    develop:
+      watch:
+        -path: ./src
+         action:rebuild
+         action:sync
+
+
+  mongodb:
+    image: mongo:latest
+    container_name: db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=authApp
+      - MONGO_INITDB_ROOT_PASSWORD=authservice
+      - MONGO_INITDB_DATABASE=authservice_db
+
+volumes:
+  mongodb-data:
