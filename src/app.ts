@@ -5,7 +5,14 @@ import dotenv from "dotenv";
 import routes from "./routes";
 import connection from "./config/db";
 
-dotenv.config();
+// Dynamically load the correct .env file based on the environment
+if (process.env.NODE_ENV === "production") {
+  dotenv.config({ path: ".env.production" });
+} else {
+  dotenv.config({ path: ".env.development" });
+}
+
+console.log(process.env.MONGO_URI); // This should print the MongoDB URI based on the environment
 
 const app = express();
 

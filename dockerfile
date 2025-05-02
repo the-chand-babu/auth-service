@@ -1,25 +1,40 @@
-FROM node:latest
+# Stage 1: Build the app
+FROM node:20-alpine AS builder
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Install pnpm globally
+# Install pnpm
 RUN npm install -g pnpm
 
-# Copy package.json and pnpm-lock.yaml to install dependencies
-COPY package*.json ./
+# Only copy lock and manifest to install dependencies
+COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies using pnpm
+# Install all dependencies (including dev)
 RUN pnpm install
 
-# Copy the rest of the application files, including the .env file
+# Copy source files
 COPY . .
 
-# Build the application (if applicable)
+# Build the application
 RUN pnpm run build
 
-# Expose the port that the app will run on
-EXPOSE 3000
+# Stage 2: Create minimal image for running the app
+FROM node:20.8.1-alpine
 
-# Command to run the app in development mode
-CMD ["pnpm", "start:dev"]
+WORKDIR /app
+
+RUN npm install -g pnpm
+
+# Only copy required files from BUILDER
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/build ./build
+
+# Expose port
+EXPOSE 4000
+
+# Only install prod dependencies if needed (optional if already done)
+# RUN pnpm install --prod
+
+CMD ["pnpm", "start"]
