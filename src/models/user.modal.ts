@@ -1,6 +1,7 @@
+import { IUser } from "@types";
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema<IUser>({
   name: {
     type: String,
     required: true,
@@ -27,7 +28,19 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  profile: {
+    type: String,
+    default: null,
+  },
+  phone: {
+    type: String,
+    default: null,
+  },
 });
+
+userSchema.index({ email: 1, role: 1 });
+userSchema.index({ name: 1, role: 1 });
+userSchema.index({ profile: 1, phone: 1 });
 
 const UserModal = mongoose.model("User", userSchema);
 export default UserModal;
