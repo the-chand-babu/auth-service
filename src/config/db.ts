@@ -1,14 +1,22 @@
 import mongoose from "mongoose";
 
-const connection = async () => {
+const connection = async (): Promise<void> => {
   try {
-    if (!process.env.MONGODB_URI) {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
       throw new Error("MongoDB URI is not defined in environment variables");
     }
-    const connect = await mongoose.connect(process.env.MONGODB_URI);
-    console.log("MongoDB connected successfully", connect.connection.host);
+
+    const connect = await mongoose.connect(uri, {
+      // Optional: Additional recommended options
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    } as mongoose.ConnectOptions); // Ensure proper type
+
+    console.log(`MongoDB connected: ${connect.connection.host}`);
   } catch (error) {
-    console.log("Error connecting to MongoDB", error);
+    console.error("Error connecting to MongoDB:", error);
+    process.exit(1);
   }
 };
 
